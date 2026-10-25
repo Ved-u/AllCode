@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Blogging Webpage</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f8ff; /* Very light blue background */
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    input[type="text"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #007bff; /* Blue */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3; /* Darker Blue */
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 20px;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        position: relative;
+    }
+
+    .blog-header {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .blog-content {
+        margin-bottom: 10px;
+    }
+
+    .blog-actions {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+    }
+
+    .blog-actions button {
+        margin-right: 15px; /* Increased margin between like and dislike buttons */
+    }
+
+    .likes-dislikes {
+        font-size: 12px;
+        color: #888;
+        margin-right: 10px; /* Add some spacing between like/dislike count and the buttons */
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h1>Simple Blogging Webpage</h1>
+
+    <form id="blogForm">
+        <input type="text" id="bloggerNameInput" placeholder="Your Name">
+        <input type="text" id="blogTitleInput" placeholder="Blog Title">
+        <textarea id="blogContent" placeholder="Write your blog here..."></textarea>
+        <button type="submit">Post Blog</button>
+    </form>
+
+    <ul id="blogList"></ul>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const blogForm = document.getElementById('blogForm');
+    const bloggerNameInput = document.getElementById('bloggerNameInput');
+    const blogTitleInput = document.getElementById('blogTitleInput');
+    const blogContent = document.getElementById('blogContent');
+    const blogList = document.getElementById('blogList');
+
+    let blogs = [];
+
+    if (localStorage.getItem('blogs')) {
+        blogs = JSON.parse(localStorage.getItem('blogs'));
+        renderBlogs();
+    }
+
+    blogForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const bloggerName = bloggerNameInput.value;
+        const title = blogTitleInput.value;
+        const content = blogContent.value;
+        createBlog(bloggerName, title, content);
+        bloggerNameInput.value = '';
+        blogTitleInput.value = '';
+        blogContent.value = '';
+    });
+
+    function createBlog(blogger, title, content) {
+        const blog = { blogger, title, content, likes: 0, dislikes: 0 };
+        blogs.push(blog);
+        saveBlogsToLocalStorage();
+        renderBlogs();
+    }
+
+    function renderBlogs() {
+        blogList.innerHTML = '';
+        blogs.forEach(blog => {
+            const li = document.createElement('li');
+
+            const blogHeader = document.createElement('div');
+            blogHeader.textContent = `Title: ${blog.title} - By: ${blog.blogger}`;
+            blogHeader.classList.add('blog-header');
+
+            const blogText = document.createElement('div');
+            blogText.textContent = blog.content;
+            blogText.classList.add('blog-content');
+
+            const likeButton = document.createElement('button');
+            likeButton.textContent = `Like (${blog.likes})`;
+            likeButton.addEventListener('click', function() {
+                likeBlog(blog);
+            });
+
+            const dislikeButton = document.createElement('button');
+            dislikeButton.textContent = `Dislike (${blog.dislikes})`;
+            dislikeButton.addEventListener('click', function() {
+                dislikeBlog(blog);
+            });
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function() {
+                deleteBlog(blog);
+            });
+
+            li.appendChild(blogHeader);
+            li.appendChild(blogText);
+            li.appendChild(likeButton);
+            li.appendChild(dislikeButton);
+            li.appendChild(deleteButton);
+
+            blogList.appendChild(li);
+        });
+    }
+
+    function likeBlog(blog) {
+        blog.likes++;
+        saveBlogsToLocalStorage();
+        renderBlogs();
+    }
+
+    function dislikeBlog(blog) {
+        blog.dislikes++;
+        saveBlogsToLocalStorage();
+        renderBlogs();
+    }
+
+    function deleteBlog(blog) {
+        const index = blogs.indexOf(blog);
+        if (index !== -1) {
+            blogs.splice(index, 1);
+            saveBlogsToLocalStorage();
+            renderBlogs();
+        }
+    }
+
+    function saveBlogsToLocalStorage() {
+        localStorage.setItem('blogs', JSON.stringify(blogs));
+    }
+});
+</script>
+
+</body>
+</html>
